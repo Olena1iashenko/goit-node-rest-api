@@ -10,7 +10,7 @@ import path from "node:path";
 // );
 const contactsPath = path.resolve("src", "db", "contacts.json");
 
-async function listContacts() {
+export async function listContacts() {
   // ...твій код. Повертає масив контактів.
   const data = await fs.readFile(contactsPath, "utf-8");
   return JSON.parse(data);
@@ -70,10 +70,4 @@ async function updateContact(contactId, body) {
   return contact;
 }
 
-export default {
-  listContacts,
-  getContactById,
-  removeContact,
-  addContact,
-  updateContact,
-};
+export { getContactById, removeContact, addContact, updateContact };
