@@ -19,4 +19,11 @@ contactsRouter.post("/", createContact);
 
 contactsRouter.put("/:id", updateContact);
 
+contactsRouter.patch(
+  "/:id/favorite",
+  isEmptyBody,
+  validateBody(updateContactSchema),
+  contactsControllers.updateStatusContact
+);
+
 export default contactsRouter;
