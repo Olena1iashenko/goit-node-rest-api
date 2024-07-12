@@ -1,19 +1,21 @@
-import Contact from "../db/models/Contacts.js";
+import Contacts from "../db/models/Contacts.js";
 
-export const getContacts = () => {
-  return Contact.find();
+export const listContacts = () => {
+  return Contacts.find();
 };
-export const getContactById = (filter) => Contact.findOne(filter);
+export const getContactById = (filter) => Contacts.findOne(filter);
+
+export const removeContact = (filter) => {
+  return Contacts.findByIdAndDelete(filter);
+};
 
 export const addContact = (data) => {
-  return Contact.create(data);
+  return Contacts.create(data);
 };
+
 export const updateContact = (filter, data) =>
-  Contact.findOneAndUpdate(filter, data);
+  Contacts.findOneAndUpdate(filter, data);
 
 export const updateStatusContact = (id, body) => {
-  return Contact.findByIdAndUpdate(id, body);
-};
-export const removeContact = (filter) => {
-  return Contact.findByIdAndDelete(filter);
+  return Contacts.findByIdAndUpdate(id, body);
 };

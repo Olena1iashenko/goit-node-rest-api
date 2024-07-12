@@ -47,18 +47,29 @@ const deleteContact = async (req, res, next) => {
 
 const createContact = async (req, res, next) => {
   try {
-    const { name, email, phone } = req.body;
-    const { error } = createContactSchema.validate({ name, email, phone });
+    const { name, email, phone, favorite } = req.body;
+    const { error } = createContactSchema.validate({
+      name,
+      email,
+      phone,
+      favorite,
+    });
     if (error) {
       //   return res.status(400).json({ message: error.message });
       throw HttpError(400);
     }
-    const newContact = await contactsService.addContact(name, email, phone);
+    const newContact = await contactsService.addContact(
+      name,
+      email,
+      phone,
+      favorite
+    );
     res.status(201).json({
       id: newContact.id,
       name: newContact.name,
       email: newContact.email,
       phone: newContact.phone,
+      favorite: newContact.favorite,
     });
   } catch (error) {
     console.error("Error creating contact:", error);
@@ -69,8 +80,13 @@ const createContact = async (req, res, next) => {
 const updateContact = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, email, phone } = req.body;
-    const { error } = updateContactSchema.validate({ name, email, phone });
+    const { name, email, phone, favorite } = req.body;
+    const { error } = updateContactSchema.validate({
+      name,
+      email,
+      phone,
+      favorite,
+    });
     if (error) {
       // return res.status(400).json({ message: error.message });
       throw HttpError(400);
@@ -84,6 +100,7 @@ const updateContact = async (req, res, next) => {
       name: name || existingContact.name,
       email: email || existingContact.email,
       phone: phone || existingContact.phone,
+      favorite: favorite || existingContact.favorite,
     };
     const updatedContact = await contactsService.updateContact(
       id,

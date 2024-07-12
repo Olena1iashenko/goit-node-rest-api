@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 import { mongoSaveError, setMongoUpdateSettings } from "./hooks.js";
 
-const contactSchema = new Schema(
+const contactsSchema = new Schema(
   {
     name: {
       type: String,
@@ -21,9 +21,9 @@ const contactSchema = new Schema(
   },
   { versionKey: false, timestamps: true }
 );
-contactSchema.post("save", mongoSaveError);
-contactSchema.pre("findOneAndUpdate", setMongoUpdateSettings);
-contactSchema.post("findOneAndUpdate", mongoSaveError);
-const Contact = model("contact", contactSchema);
+contactsSchema.post("save", mongoSaveError);
+contactsSchema.pre("findOneAndUpdate", setMongoUpdateSettings);
+contactsSchema.post("findOneAndUpdate", mongoSaveError);
+const Contacts = model("Contacts", contactsSchema);
 
-export default Contact;
+export default Contacts;
