@@ -19,7 +19,7 @@ const getAllContacts = async (req, res, next) => {
 const getOneContact = async (req, res, next) => {
   try {
     const { id: _id } = req.params;
-    const contact = await contactsServices.getContactById({ _id });
+    const contact = await contactsService.getContactById({ _id });
     if (!contact) {
       return res.status(404).json({ message: "Not found" });
     }
@@ -111,7 +111,7 @@ const updateContact = async (req, res, next) => {
 const updateStatusContact = async (req, res, next) => {
   try {
     const { id: _id } = req.params;
-    const updatedContact = await contactsServices.updateStatusContact(
+    const updatedContact = await contactsService.updateStatusContact(
       { _id },
       req.body
     );
