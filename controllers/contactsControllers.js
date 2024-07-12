@@ -18,8 +18,8 @@ const getAllContacts = async (req, res, next) => {
 
 const getOneContact = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const contact = await contactsService.getContactById(id);
+    const { id: _id } = req.params;
+    const contact = await contactsServices.getContactById({ _id });
     if (!contact) {
       return res.status(404).json({ message: "Not found" });
     }
@@ -32,8 +32,8 @@ const getOneContact = async (req, res, next) => {
 
 const deleteContact = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const deletedContact = await contactsService.removeContact(id);
+    const { id: _id } = req.params;
+    const deletedContact = await contactsService.removeContact({ _id });
     if (!deletedContact) {
       //   return res.status(404).json({ message: "Not found" });
       throw HttpError(404);
@@ -58,12 +58,7 @@ const createContact = async (req, res, next) => {
       //   return res.status(400).json({ message: error.message });
       throw HttpError(400);
     }
-    const newContact = await contactsService.addContact(
-      name,
-      email,
-      phone,
-      favorite
-    );
+    const newContact = await contactsService.addContact(req.body);
     res.status(201).json({
       id: newContact.id,
       name: newContact.name,
@@ -79,7 +74,7 @@ const createContact = async (req, res, next) => {
 
 const updateContact = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { id: _id } = req.params;
     const { name, email, phone, favorite } = req.body;
     const { error } = updateContactSchema.validate({
       name,
@@ -91,7 +86,7 @@ const updateContact = async (req, res, next) => {
       // return res.status(400).json({ message: error.message });
       throw HttpError(400);
     }
-    const existingContact = await contactsService.getContactById(id);
+    const existingContact = await contactsService.getContactById({ _id });
     if (!existingContact) {
       // return res.status(404).json({ message: "Not found" });
       throw HttpError(404);
@@ -103,7 +98,7 @@ const updateContact = async (req, res, next) => {
       favorite: favorite || existingContact.favorite,
     };
     const updatedContact = await contactsService.updateContact(
-      id,
+      { _id },
       updatedFields
     );
     res.status(200).json(updatedContact);

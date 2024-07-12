@@ -3,7 +3,8 @@ import Contacts from "../db/models/Contacts.js";
 export const listContacts = () => {
   return Contacts.find();
 };
-export const getContactById = (filter) => Contacts.findOne(filter);
+
+export const getContactById = (id) => Contacts.findOne(id);
 
 export const removeContact = (filter) => {
   return Contacts.findByIdAndDelete(filter);
