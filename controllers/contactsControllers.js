@@ -6,18 +6,17 @@ import {
 } from "../schemas/contactsSchemas.js";
 import * as contactsService from "../services/contactsServices.js";
 
-const getAllContacts = async (req, res) => {
+const getAllContacts = async (req, res, next) => {
   try {
     const contacts = await contactsService.listContacts();
     res.status(200).json(contacts);
   } catch (error) {
     console.error("Error fetching contacts:", error);
-    next(error);
-    // res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-const getOneContact = async (req, res) => {
+const getOneContact = async (req, res, next) => {
   try {
     const { id } = req.params;
     const contact = await contactsService.getContactById(id);
@@ -27,8 +26,7 @@ const getOneContact = async (req, res) => {
     res.status(200).json(contact);
   } catch (error) {
     console.error("Error fetching contact:", error);
-    next(error);
-    // res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -43,12 +41,11 @@ const deleteContact = async (req, res, next) => {
     res.status(204).json(deletedContact);
   } catch (error) {
     console.error("Error deleting contact:", error);
-    next(error);
-    // res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-const createContact = async (req, res) => {
+const createContact = async (req, res, next) => {
   try {
     const { name, email, phone } = req.body;
     const { error } = createContactSchema.validate({ name, email, phone });
@@ -65,12 +62,11 @@ const createContact = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating contact:", error);
-    next(error);
-    // res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-const updateContact = async (req, res) => {
+const updateContact = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { name, email, phone } = req.body;
@@ -96,23 +92,29 @@ const updateContact = async (req, res) => {
     res.status(200).json(updatedContact);
   } catch (error) {
     console.error("Error updating contact:", error);
-    next(error);
-    // res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
 const updateStatusContact = async (req, res, next) => {
-  const { id: _id } = req.params;
-  const updatedContact = await contactsServices.updateStatusContact(
-    { _id },
-    req.body
-  );
-  if (!updatedContact) {
-    throw HttpError(404);
+  try {
+    const { id: _id } = req.params;
+    const updatedContact = await contactsServices.updateStatusContact(
+      { _id },
+      req.body
+    );
+
+    if (!updatedContact) {
+      throw HttpError(404);
+    }
+
+    res.status(200).json({
+      updatedContact,
+    });
+  } catch (error) {
+    console.error("Error updating contact status:", error);
+    res.status(500).json({ message: "Server error" });
   }
-  res.status(200).json({
-    updatedContact,
-  });
 };
 
 export default {

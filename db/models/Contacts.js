@@ -1,40 +1,29 @@
-import express from "express";
-import contactsControllers from "../controllers/contactsControllers.js";
-import {
-  createContactSchema,
-  updateContactSchema,
-} from "../../schemas/contactsSchemas.js";
-import isValidId from "../../middlewares/isValidId.js";
-import validateBody from "../../helpers/validateBody.js";
-import { isEmptyBody } from "../../middlewares/isEmptyBody.js";
+import { Schema, model } from "mongoose";
+import { mongoSaveError, setMongoUpdateSettings } from "./hooks.js";
 
-const contactsRouter = express.Router();
-
-contactsRouter.get("/", contactsControllers.getAllContacts);
-
-contactsRouter.get("/:id", isValidId, contactsControllers.getOneContact);
-
-contactsRouter.delete("/:id", contactsControllers.deleteContact);
-
-contactsRouter.post(
-  "/",
-  isEmptyBody,
-  validateBody(createContactSchema),
-  contactsControllers.createContact
+const contactSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Set name for contact"],
+    },
+    email: {
+      type: String,
+    },
+    phone: {
+      type: String,
+    },
+    favorite: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+  },
+  { versionKey: false, timestamps: true }
 );
+contactSchema.post("save", mongoSaveError);
+contactSchema.pre("findOneAndUpdate", setMongoUpdateSettings);
+contactSchema.post("findOneAndUpdate", mongoSaveError);
+const Contact = model("contact", contactSchema);
 
-contactsRouter.put(
-  "/:id",
-  isEmptyBody,
-  validateBody(updateContactSchema),
-  contactsControllers.updateContact
-);
-
-contactsRouter.patch(
-  "/:id/favorite",
-  isEmptyBody,
-  validateBody(updateContactSchema),
-  contactsControllers.updateStatusContact
-);
-
-export default contactsRouter;
+export default Contact;
