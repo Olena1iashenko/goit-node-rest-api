@@ -1,11 +1,12 @@
 import HttpError from "../helpers/HttpError.js";
+import ctrlWrapper from "../helpers/ctrlWrapper.js";
 import {
   createContactSchema,
   updateContactSchema,
 } from "../schemas/contactsSchemas.js";
 import * as contactsService from "../services/contactsServices.js";
 
-export const getAllContacts = async (req, res) => {
+const getAllContacts = async (req, res, next) => {
   try {
     const contacts = await contactsService.listContacts();
     res.status(200).json(contacts);
@@ -15,10 +16,10 @@ export const getAllContacts = async (req, res) => {
   }
 };
 
-export const getOneContact = async (req, res) => {
+const getOneContact = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const contact = await contactsService.getContactById(id);
+    const { id: _id } = req.params;
+    const contact = await contactsService.getContactById({ _id });
     if (!contact) {
       return res.status(404).json({ message: "Not found" });
     }
@@ -29,36 +30,41 @@ export const getOneContact = async (req, res) => {
   }
 };
 
-export const deleteContact = async (req, res, next) => {
+const deleteContact = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const deletedContact = await contactsService.removeContact(id);
+    const { id: _id } = req.params;
+    const deletedContact = await contactsService.removeContact({ _id });
     if (!deletedContact) {
       //   return res.status(404).json({ message: "Not found" });
       throw HttpError(404);
     }
     res.status(204).json(deletedContact);
   } catch (error) {
-    next(error);
-    // console.error("Error deleting contact:", error);
-    // res.status(500).json({ message: "Server error" });
+    console.error("Error deleting contact:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-export const createContact = async (req, res) => {
+const createContact = async (req, res, next) => {
   try {
-    const { name, email, phone } = req.body;
-    const { error } = createContactSchema.validate({ name, email, phone });
+    const { name, email, phone, favorite } = req.body;
+    const { error } = createContactSchema.validate({
+      name,
+      email,
+      phone,
+      favorite,
+    });
     if (error) {
       //   return res.status(400).json({ message: error.message });
       throw HttpError(400);
     }
-    const newContact = await contactsService.addContact(name, email, phone);
+    const newContact = await contactsService.addContact(req.body);
     res.status(201).json({
       id: newContact.id,
       name: newContact.name,
       email: newContact.email,
       phone: newContact.phone,
+      favorite: newContact.favorite,
     });
   } catch (error) {
     console.error("Error creating contact:", error);
@@ -66,25 +72,33 @@ export const createContact = async (req, res) => {
   }
 };
 
-export const updateContact = async (req, res) => {
+const updateContact = async (req, res, next) => {
   try {
-    const { id } = req.params;
-    const { name, email, phone } = req.body;
-    const { error } = updateContactSchema.validate({ name, email, phone });
+    const { id: _id } = req.params;
+    const { name, email, phone, favorite } = req.body;
+    const { error } = updateContactSchema.validate({
+      name,
+      email,
+      phone,
+      favorite,
+    });
     if (error) {
-      return res.status(400).json({ message: error.message });
+      // return res.status(400).json({ message: error.message });
+      throw HttpError(400);
     }
-    const existingContact = await contactsService.getContactById(id);
+    const existingContact = await contactsService.getContactById({ _id });
     if (!existingContact) {
-      return res.status(404).json({ message: "Not found" });
+      // return res.status(404).json({ message: "Not found" });
+      throw HttpError(404);
     }
     const updatedFields = {
       name: name || existingContact.name,
       email: email || existingContact.email,
       phone: phone || existingContact.phone,
+      favorite: favorite || existingContact.favorite,
     };
     const updatedContact = await contactsService.updateContact(
-      id,
+      { _id },
       updatedFields
     );
     res.status(200).json(updatedContact);
@@ -92,4 +106,34 @@ export const updateContact = async (req, res) => {
     console.error("Error updating contact:", error);
     res.status(500).json({ message: "Server error" });
   }
+};
+
+const updateStatusContact = async (req, res, next) => {
+  try {
+    const { id: _id } = req.params;
+    const updatedContact = await contactsService.updateStatusContact(
+      { _id },
+      req.body
+    );
+
+    if (!updatedContact) {
+      throw HttpError(404);
+    }
+
+    res.status(200).json({
+      updatedContact,
+    });
+  } catch (error) {
+    console.error("Error updating contact status:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export default {
+  getAllContacts: ctrlWrapper(getAllContacts),
+  getOneContact: ctrlWrapper(getOneContact),
+  deleteContact: ctrlWrapper(deleteContact),
+  createContact: ctrlWrapper(createContact),
+  updateContact: ctrlWrapper(updateContact),
+  updateStatusContact: ctrlWrapper(updateStatusContact),
 };
