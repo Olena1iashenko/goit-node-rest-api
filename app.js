@@ -34,4 +34,23 @@ const startServer = () => {
   });
 };
 
+// import jwt from "jsonwebtoken";
+// import "dotenv/config";
+
+// const { JWT_SECRET } = process.env;
+// const payload = {
+//   id: "6697be421b899514db3c3f74",
+// };
+
+// const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "24h" });
+// console.log(token);
+// const decodeToken = jwt.decode(token);
+// console.log(decodeToken);
+
+// try {
+//   const tokenPayload = jwt.verify(token, JWT_SECRET);
+// } catch (error) {
+//   console.log(error.message);
+// }
+
 export default startServer;
