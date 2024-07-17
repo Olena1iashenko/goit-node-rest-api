@@ -1,8 +1,7 @@
 import * as authServices from "../services/authServices.js";
 
-import HttpError from "../helpers/HttpError.js";
+// import HttpError from "../helpers/HttpError.js";
 import ctrlWrapper from "../helpers/ctrlWrapper.js";
-import { response } from "express";
 
 const signup = async (res, req) => {
   const newUser = await authServices.signup(req.body);
