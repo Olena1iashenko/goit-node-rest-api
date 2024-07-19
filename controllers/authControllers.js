@@ -45,9 +45,11 @@ const signin = async (req, res, next) => {
   const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "15m" });
   const refreshToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
 
+  await authServices.updateUser({ _id: id }, { accessToken, refreshToken });
+
   res.json({
     user: {
-      // token: user.token,
+      // token: token,
       accessToken: accessToken,
       refreshToken: refreshToken,
       email: user.email,
@@ -56,7 +58,51 @@ const signin = async (req, res, next) => {
   });
 };
 
+const refresh = async (req, res, next) => {
+  const { refreshToken: newToken } = req.body;
+
+  try {
+    const { id } = jwt.verify(newToken, JWT_SECRET);
+
+    const payload = { id };
+    const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "15m" });
+    const refreshToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+
+    res.json({
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    next(HttpError(403, "Refresh token invalid"));
+  }
+};
+
+const signout = async (req, res, next) => {
+  const { _id } = req.user;
+  if (!req.user.refreshToken) {
+    throw HttpError(403, "User already signout");
+  }
+
+  await authServices.updateUser({ _id }, { accessToken: "", refreshToken: "" });
+
+  res.status(204).json({
+    message: "Signout succesfully",
+  });
+};
+
+const getCurrent = async (req, res) => {
+  const { email, subscription } = req.user;
+
+  res.json({
+    email,
+    subscription,
+  });
+};
+
 export default {
   signup: ctrlWrapper(signup),
   signin: ctrlWrapper(signin),
+  refresh: ctrlWrapper(refresh),
+  signout: ctrlWrapper(signout),
+  current: ctrlWrapper(getCurrent),
 };
