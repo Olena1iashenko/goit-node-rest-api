@@ -7,8 +7,11 @@ import {
 import isValidId from "../middlewares/isValidId.js";
 import validateBody from "../helpers/validateBody.js";
 import isEmptyBody from "../middlewares/isEmptyBody.js";
+import authenticate from "../middlewares/authenticate.js";
 
 const contactsRouter = express.Router();
+
+contactsRouter.use(authenticate);
 
 contactsRouter.get("/", contactsControllers.getAllContacts);
 
