@@ -46,10 +46,10 @@ const signin = async (req, res, next) => {
   const refreshToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
 
   res.json({
-    // token: token,
-    accessToken,
-    refreshToken,
     user: {
+      // token: user.token,
+      accessToken: accessToken,
+      refreshToken: refreshToken,
       email: user.email,
       subscription: user.subscription,
     },
