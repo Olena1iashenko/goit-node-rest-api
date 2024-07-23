@@ -1,6 +1,12 @@
 import HttpError from "../helpers/HttpError.js";
 import ctrlWrapper from "../helpers/ctrlWrapper.js";
 import * as contactsService from "../services/contactsServices.js";
+import fs from "node:fs/promises";
+import path from "node:path";
+
+const avatarsPath = path.resolve("public", "avatars");
+// console.log(avatarsPath);
+// /Users/helen/Desktop/goit-node-rest-api/public/avatars
 
 const getAllContacts = async (req, res, next) => {
   const { _id: owner } = req.user;
@@ -36,12 +42,45 @@ const deleteContact = async (req, res, next) => {
 };
 
 const createContact = async (req, res, next) => {
-  const { _id: owner } = req.user;
-  const newContact = await contactsService.addContact({ ...req.body, owner });
-  res.status(201).json({
-    message: "Contact add sucesfully",
-    newContact,
-  });
+  // console.log("req.body", req.body);
+  //   req.body [Object: null prototype] {
+  //   name: 'Onil Jackson',
+  //   email: 'ooo@bjay.com',
+  //   phone: '0978767985'
+  // }
+  // console.log("req.file", req.file);
+  // req.file {
+  //   fieldname: 'avatar',
+  //   originalname: 'IMG_20240302_095707.jpg',
+  //   encoding: '7bit',
+  //   mimetype: 'image/jpeg',
+  //   destination: '/Users/helen/Desktop/goit-node-rest-api/tmp',
+  //   filename: '1721742326764-300939311_IMG_20240302_095707.jpg',
+  //   path: '/Users/helen/Desktop/goit-node-rest-api/tmp/1721742326764-300939311_IMG_20240302_095707.jpg',
+  //   size: 549117
+  // }
+  try {
+    const { path: oldPath, filename } = req.file;
+    const newPath = path.join(avatarsPath, filename);
+    await fs.rename(oldPath, newPath);
+
+    const avatarURL = path.join("public", "avatars", filename);
+
+    const { _id: owner } = req.user;
+    const newContact = await contactsService.addContact({
+      ...req.body,
+      owner,
+      avatarURL,
+    });
+
+    res.status(201).json({
+      message: "Contact add sucesfully",
+      newContact,
+    });
+  } catch (error) {
+    await fs.unlink(req.file.path);
+    throw error;
+  }
 };
 
 const updateContact = async (req, res, next) => {
