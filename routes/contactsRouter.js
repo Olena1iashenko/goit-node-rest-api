@@ -22,9 +22,9 @@ contactsRouter.delete("/:id", contactsControllers.deleteContact);
 
 contactsRouter.post(
   "/",
-  upload.single("avatar"),
-  // upload.array("avatar", 5),
-  // upload.fields([{name: "avatar", maxCount: 1}, {name: "subAvatar", maxCount: 10},]),
+  upload.single("contact"),
+  // upload.array("contact", 5),
+  // upload.fields([{name: "contact", maxCount: 1}, {name: "subcontact", maxCount: 10},]),
   isEmptyBody,
   validateBody(createContactSchema),
   contactsControllers.createContact

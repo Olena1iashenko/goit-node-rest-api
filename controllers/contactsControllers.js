@@ -61,16 +61,16 @@ const createContact = async (req, res, next) => {
   // }
   try {
     const { path: oldPath, filename } = req.file;
-    const newPath = path.join(avatarsPath, filename);
+    const newPath = path.join(image, filename);
     await fs.rename(oldPath, newPath);
 
-    const avatarURL = path.join("public", "avatars", filename);
+    const contactURL = path.join("public", "contacts", filename);
 
     const { _id: owner } = req.user;
     const newContact = await contactsService.addContact({
       ...req.body,
       owner,
-      avatarURL,
+      contactURL,
     });
 
     res.status(201).json({

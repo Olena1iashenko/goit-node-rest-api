@@ -1,6 +1,9 @@
 import * as authServices from "../services/authServices.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import path from "node:path";
+import Jimp from "jimp";
+import gravatar from "gravatar";
 
 import ctrlWrapper from "../helpers/ctrlWrapper.js";
 import HttpError from "../helpers/HttpError.js";
@@ -10,6 +13,8 @@ const { JWT_SECRET } = process.env;
 const signup = async (req, res, next) => {
   const { email, password } = req.body;
   const user = await authServices.findUser({ email });
+
+  const url = gravatar.url({ email }, { s: "250" });
   if (user) {
     throw HttpError(409, "Email already in use");
   }
@@ -18,6 +23,7 @@ const signup = async (req, res, next) => {
   const newUser = await authServices.signup({
     ...req.body,
     password: hashPassword,
+    avatarURL: url,
   });
 
   res.status(201).json({
@@ -99,10 +105,32 @@ const getCurrent = async (req, res) => {
   });
 };
 
+const updateAvatar = async (req, res) => {
+  const { _id } = req.user;
+  const { filename } = req.file;
+  const img = filename.replace(".jpg", "");
+  Jimp.read(filename)
+    .then((img) => {
+      return img.resize(250, 250);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+  const avatarURL = path.join("public", "avatars", filename);
+  const updatedAvatar = await authServices.updateUser({ _id }, { avatarURL });
+
+  if (!updatedAvatar) {
+    throw HttpError(401, "Could not update avatar");
+  }
+  res.json({ message: `Avatar updated successfully`, updatedAvatar });
+};
+
 export default {
   signup: ctrlWrapper(signup),
   signin: ctrlWrapper(signin),
   refresh: ctrlWrapper(refresh),
   signout: ctrlWrapper(signout),
   current: ctrlWrapper(getCurrent),
+  updateAvatar: ctrlWrapper(updateAvatar),
 };
