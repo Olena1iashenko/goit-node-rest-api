@@ -22,6 +22,9 @@ const contactsSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "user",
     },
+    contactURL: {
+      type: String,
+    },
   },
   { versionKey: false, timestamps: true }
 );

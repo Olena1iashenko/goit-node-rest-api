@@ -8,6 +8,7 @@ import isValidId from "../middlewares/isValidId.js";
 import validateBody from "../helpers/validateBody.js";
 import isEmptyBody from "../middlewares/isEmptyBody.js";
 import authenticate from "../middlewares/authenticate.js";
+import upload from "../middlewares/upload.js";
 
 const contactsRouter = express.Router();
 
@@ -21,6 +22,9 @@ contactsRouter.delete("/:id", contactsControllers.deleteContact);
 
 contactsRouter.post(
   "/",
+  upload.single("contact"),
+  // upload.array("contact", 5),
+  // upload.fields([{name: "contact", maxCount: 1}, {name: "subcontact", maxCount: 10},]),
   isEmptyBody,
   validateBody(createContactSchema),
   contactsControllers.createContact
