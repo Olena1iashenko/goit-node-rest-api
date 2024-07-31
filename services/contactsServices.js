@@ -21,3 +21,6 @@ export const updateContact = (filter, data) =>
 export const updateStatusContact = (id, body) => {
   return Contacts.findByIdAndUpdate(id, body);
 };
+
+try {
+} catch (error) {}
