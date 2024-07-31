@@ -11,6 +11,7 @@ import {
   authSigninSchema,
   authSignupSchema,
   authRefreshTokenSchema,
+  authEmailSchema,
 } from "../schemas/authSchemas.js";
 
 const authRouter = express.Router();
@@ -31,6 +32,14 @@ authRouter.patch(
 );
 
 authRouter.get("/current", authenticate, authControllers.current);
+
+authRouter.get("/verify/:verificationToken", authControllers.verify);
+
+authRouter.post(
+  "/verify",
+  validateBody(authEmailSchema),
+  authControllers.resendVerifyEmail
+);
 
 authRouter.post(
   "/login",

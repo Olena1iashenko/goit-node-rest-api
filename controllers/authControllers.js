@@ -4,11 +4,13 @@ import jwt from "jsonwebtoken";
 import path from "node:path";
 import Jimp from "jimp";
 import gravatar from "gravatar";
+import { nanoid } from "nanoid";
 
 import ctrlWrapper from "../helpers/ctrlWrapper.js";
 import HttpError from "../helpers/HttpError.js";
+import sendEmail from "../utils/sendEmail.js";
 
-const { JWT_SECRET } = process.env;
+const { JWT_SECRET, BASE_URL } = process.env;
 
 const signup = async (req, res, next) => {
   const { email, password } = req.body;
@@ -20,11 +22,20 @@ const signup = async (req, res, next) => {
   }
 
   const hashPassword = await bcrypt.hash(password, 10);
+  const verificationToken = nanoid();
   const newUser = await authServices.signup({
     ...req.body,
     password: hashPassword,
     avatarURL: url,
+    verificationToken,
   });
+  const verifyEmail = {
+    to: email,
+    subject: "Verify email",
+    html: `<a target="_blank" href="${BASE_URL}/users/verify/${verificationToken}">Click to verify</a>`,
+  };
+
+  await sendEmail(verifyEmail);
 
   res.status(201).json({
     email: newUser.email,
@@ -33,11 +44,55 @@ const signup = async (req, res, next) => {
   });
 };
 
+const verify = async (req, res) => {
+  const { verificationToken } = req.params;
+  const user = await authServices.findUser({
+    verificationToken,
+  });
+
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+  if (user.verify) {
+    throw HttpError(400, "User already verified");
+  }
+
+  await authServices.updateUser({ _id: user._id }, { verify: true });
+
+  res.json({ message: "Verification successful. Email succesfully verified" });
+};
+
+const resendVerifyEmail = async (req, res) => {
+  const { email } = req.body;
+  const user = await authServices.findUser({ email });
+  if (!user) {
+    throw HttpError(404, "Email not found");
+  }
+  if (user.verify) {
+    throw HttpError(400, "Email already verified");
+  }
+  const verifyEmail = {
+    to: email,
+    subject: "Verify email",
+    html: `<a target="_blank" href="${BASE_URL}/users/verify/${user.verificationToken}">Click to verify again</a>`,
+  };
+
+  await sendEmail(verifyEmail);
+
+  res.json({
+    message: "Verify email resend succesfully",
+  });
+};
+
 const signin = async (req, res, next) => {
   const { email, password } = req.body;
   const user = await authServices.findUser({ email });
   if (!user) {
     throw HttpError(401, "Email or password is wrong");
+  }
+
+  if (!user.verify) {
+    throw HttpError(400, "Email not verify");
   }
 
   const passwordCompare = await bcrypt.compare(password, user.password);
@@ -133,4 +188,6 @@ export default {
   signout: ctrlWrapper(signout),
   current: ctrlWrapper(getCurrent),
   updateAvatar: ctrlWrapper(updateAvatar),
+  verify: ctrlWrapper(verify),
+  resendVerifyEmail: ctrlWrapper(resendVerifyEmail),
 };
