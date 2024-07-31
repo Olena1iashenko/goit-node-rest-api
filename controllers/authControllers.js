@@ -45,22 +45,20 @@ const signup = async (req, res, next) => {
 };
 
 const verify = async (req, res) => {
-  console.log("Here");
   const { verificationToken } = req.params;
-  console.log("verificationToken", verificationToken);
   const user = await authServices.findUser({
     verificationToken,
   });
-  console.log("User", user);
+
   if (!user) {
     throw HttpError(404, "User not found");
   }
   if (user.verify) {
     throw HttpError(400, "User already verified");
   }
-  console.log("Before await");
+
   await authServices.updateUser({ _id: user._id }, { verify: true });
-  console.log("Before res");
+
   res.json({ message: "Verification successful. Email succesfully verified" });
 };
 
